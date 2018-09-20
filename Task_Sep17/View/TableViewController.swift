@@ -11,10 +11,12 @@ import SDWebImage
 
 class TableViewController: UITableViewController {
     
-    var dataList = [DataViewModel]()
 
     private let cellId = "cellId"
     let refreshCntrol = UIRefreshControl()
+    let appDelegate = UIApplication.shared.delegate as! AppDelegate
+
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -27,34 +29,40 @@ class TableViewController: UITableViewController {
         }
         
         // Configure Refresh Control
-        refreshCntrol.addTarget(self, action: #selector(fetchAllData), for: .valueChanged)
+        refreshCntrol.addTarget(self, action: #selector(checkReachability), for: .valueChanged)
         tableView.allowsSelection = false
         tableView.register(CustomTableViewCell.self, forCellReuseIdentifier: cellId)   // register cell name
-        self.fetchAllData()
+        
+        self.checkReachability()
     }
- 
+    
+    // Check reachability and call api
+    @objc func checkReachability(){
+        if Connectivity.isConnectedToInternet {
+            self.fetchAllData()
+        }
+        else{
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                self.refreshCntrol.endRefreshing()
+            }
+        }
+    }
+    
     // MARK: - Fetch all data from api
     @objc func fetchAllData() {
         let api = ApiService()
         api.fetch(success: {
-            response in
-            self.title = response["title"].string
-            let rows = response["rows"]
-            self.dataList = []
-            for (_, value) in rows {
-                if(!(value["title"].string == nil && value["description"].string == nil && value["imageHref"].string == nil)){
-                    let dataViewModal = DataViewModel(data:DataModel(title: value["title"].string, description: value["description"].string, url:value["imageHref"].string))
-                    self.dataList.append(dataViewModal)
-                }
-            }
-            self.tableView.reloadData()
+             [weak self] response in
+            self?.title = self?.appDelegate.dataList[0].navBarTitle
+            self?.tableView.reloadData()
             DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
-                self.refreshCntrol.endRefreshing()
+                self?.refreshCntrol.endRefreshing()
             }
         })
     }
     
-
+ 
+    
     // MARK: - Table view data source
     override func numberOfSections(in tableView: UITableView) -> Int {
         // #warning Incomplete implementation, return the number of sections
@@ -63,7 +71,7 @@ class TableViewController: UITableViewController {
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         // #warning Incomplete implementation, return the number of rows        
-        return dataList.count
+        return appDelegate.dataList.count
     }
 
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
@@ -72,7 +80,7 @@ class TableViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath) as! CustomTableViewCell
-        let viewModel = self.dataList[indexPath.row]
+        let viewModel = self.appDelegate.dataList[indexPath.row]
         cell.setData(data: viewModel)
         return cell
     }

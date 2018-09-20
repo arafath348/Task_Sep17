@@ -10,10 +10,12 @@ class DataViewModel {
     let title: String?
     let description: String?
     let url: String?
+    let navBarTitle: String?
 
     init(data :DataModel) {
         title = data.title
         description = data.description
         url = data.url
+        navBarTitle = data.navBarTitle
     }
 }

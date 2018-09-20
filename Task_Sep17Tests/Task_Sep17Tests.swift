@@ -24,25 +24,28 @@ class Task_Sep17Tests: XCTestCase {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
         super.tearDown()
     }
-    
+
+    // Test model is equal
     func testModelEqual(){
-        let dataModel = DataModel(title: "Apple", description: "Welcome to Apple", url: "https://www.apple.com/")
+        let dataModel = DataModel(title: "Apple", description: "Welcome to Apple", url: "https://www.apple.com/", navBarTitle: "About India")
         let dataViewModel = DataViewModel(data: dataModel)
         XCTAssertEqual(dataViewModel.title, "Apple")
-        XCTAssertEqual(dataViewModel.description, "Welcome to Google")
         XCTAssertEqual(dataViewModel.url, "https://www.apple.com/")
     }
   
+    // Test model is not nil
     func testModelNotNil() {
         XCTAssertNotNil(model, "model is nil")
     }
     
+    // Test model is new
     func testIsNew() {
         XCTAssertTrue(model.isNew(), "model should be new")
         model.data["id"] = "id1"
         XCTAssertFalse(model.isNew(), "model should not be new")
     }
     
+    // Test fetch data from new model
     func testFetchNewModel() {
         let expectation = self.expectation(description: "fetch")
         
@@ -50,13 +53,14 @@ class Task_Sep17Tests: XCTestCase {
             success: {
                 response in
                 XCTAssertNotNil(self.model.data, "response is empty")
-                XCTAssertNotEqual(self.model.data.arrayValue.count, 0, "collection is empty")
+                XCTAssertEqual(self.model.data.arrayValue.count, 0, "collection is empty")
                 expectation.fulfill()
         })
         
         self.waitForExpectations(timeout: 30.0, handler: nil)
     }
     
+    // Test fetch data from existing model
     func testFetchExistingModel() {
         let expectation = self.expectation(description: "fetch")
         
@@ -72,7 +76,7 @@ class Task_Sep17Tests: XCTestCase {
         self.waitForExpectations(timeout: 30.0, handler: nil)
     }
 
-
+    // Test error handler for wrong domain
     func testErrorHandler() {
         let expectation = self.expectation(description: "error-handler")
         
@@ -88,6 +92,7 @@ class Task_Sep17Tests: XCTestCase {
         self.waitForExpectations(timeout: 30.0, handler: nil)
     }
     
+    // Test error handler for 404 error
     func testErrorWithResponse() {
         let expectation = self.expectation(description: "error-response-handler")
         model.rootUrl = "https://dl.dropboxusercontent.com/s/2iodh4vg0eortkl/"
@@ -103,8 +108,5 @@ class Task_Sep17Tests: XCTestCase {
         
         self.waitForExpectations(timeout: 30.0, handler: nil)
     }
-    
-    
-    
     
 }
